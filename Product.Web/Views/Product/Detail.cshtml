@@ -1,0 +1,150 @@
+﻿
+
+@{
+    var id = ViewBag.Message;
+}
+
+<html>
+
+
+<head>
+
+</head>
+
+<body>
+    <h3>@ViewData["PageTitle"]</h3>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div id="productDetailTable" class="panel-body">
+            </div>
+        </div>
+        <div class="col-md-7"></div>
+        <div class="col-md-1">
+            @Html.ActionLink("Back", "Index", "Product")
+        </div>
+    </div>
+
+
+
+    <div class="panel-body" id="panelCost">
+        <table class="table table-bordered" id="productHistoryTable">
+            <tr>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Sandard Cost</th>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+</body>
+</html>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        Manager.GetByID(@id);
+
+    });
+
+
+
+    var Manager = {
+
+        GetByID: function (ProductID) {
+
+            var obj = "";
+
+            var urlString = (window.location.href).toLowerCase();
+            var url = new URL(urlString);
+            var serviceUrl = url.origin + "/api/product/GetById/" + ProductID;
+
+            window.Manager.GetAPI(serviceUrl, onSuccess, onFailed);
+            function onSuccess(jsonData) {
+                obj = jsonData;
+
+
+                var table = document.createElement("table");
+                $(table).addClass("table");
+
+
+                var row = table.insertRow();
+
+                var cell = row.insertCell();
+                cell.innerHTML = "ID";
+                var cellValue = row.insertCell();
+                cellValue.innerHTML = obj.productId;
+
+                row = table.insertRow();
+                cell = row.insertCell();
+                cell.innerHTML = "Name ";
+                cellValue = row.insertCell();
+                cellValue.innerHTML = obj.name;
+
+                row = table.insertRow();
+                cell = row.insertCell();
+                cell.innerHTML = "Color ";
+                cellValue = row.insertCell();
+                cellValue.innerHTML = obj.color;
+
+                row = table.insertRow();
+                cell = row.insertCell();
+                cell.innerHTML = "Size ";
+                cellValue = row.insertCell();
+                cellValue.innerHTML = obj.size;
+
+                $("#productDetailTable").append(table);
+
+                if (obj.productHistory.length) {
+                    $.each(obj.productHistory, function (i, item) {
+                        var rows = "<tr>" +
+                            "<td id='StartDate'>" +   item.startDate + "</td>" +
+                            "<td id='EndDate'>";
+
+                        if (item.endDate != null)
+                            rows += item.endDate + "</td>"
+                        else
+                            rows +=  "</td>";
+
+                        rows +=   "<td id='StandardCost'>" + item.standardCost + "</td>" +  "</tr>";
+
+                        $('#productHistoryTable').append(rows);
+
+                    });
+
+                    $("#productHistoryTable").show();
+                }
+                else
+                {
+                    $("#panelCost").append("<span>No product cost available.</span>")
+                    $("#productHistoryTable").hide();
+                }
+
+
+            }
+            function onFailed(error) {
+                window.alert(error.statusText);
+            }
+            return obj;
+        },
+
+        GetAPI: function (serviceUrl, successCallback, errorCallback) {
+            $.ajax({
+                type: "GET",
+                url: serviceUrl,
+                processData: true,
+                dataType: "json",
+                success: successCallback,
+                error: errorCallback
+            });
+        },
+
+    }
+
+
+</script>

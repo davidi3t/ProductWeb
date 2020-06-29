@@ -1,0 +1,84 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="panel panel-primary">
+
+
+    <div class="panel-body">
+        <table class="table table-bordered" id="productsTable">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Number</th>
+                <th>Price</th>
+                <th>View</th>
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        Manager.GetAllProducts();
+
+    });
+
+
+
+    var Manager = {
+
+        GetAllProducts: function () {
+            var obj = "";
+
+            var urlString = (window.location.href).toLowerCase();
+            var url = new URL(urlString);
+            var serviceUrl = url.origin + "/api/product/GetAll";
+
+            window.Manager.GetAPI(serviceUrl, onSuccess, onFailed);
+            function onSuccess(jsonData) {
+                obj = jsonData;
+                var formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                });
+                $.each(jsonData, function (i, item) {
+                    var rows = "<tr>" +
+                        "<td id='Id'>" + item.productId + "</td>" +
+                        "<td id='Name'>" + item.name + "</td>" +
+                        "<td id='Number'>" + item.productNumber + "</td>" +
+                        "<td id='Price'>" + formatter.format(item.listPrice) + "</td>" +
+                        "<td><a href='/Product/Detail/" + item.productId + "' class='btn btn-primary' >View</a></td>"
+                    "</tr>";
+
+                    $('#productsTable').append(rows);
+
+                });
+            }
+            function onFailed(error) {
+                window.alert(error.statusText);
+            }
+            return obj;
+        },
+
+        GetAPI: function (serviceUrl, successCallback, errorCallback) {
+            $.ajax({
+                type: "GET",
+                url: serviceUrl,
+                processData: true,
+                dataType: "json",
+                success: successCallback,
+                error: errorCallback
+            });
+        },
+
+    }
+
+
+</script>
